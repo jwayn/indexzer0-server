@@ -4,7 +4,7 @@
   "description": "An opensource Q&A platform.",
   "main": "index.js",
   "scripts": {
-    "dev:server": "nodemon server.js"
+    "app": "nodemon app.js"
   },
   "author": "Jason Prickett",
   "license": "MIT",
