@@ -53,8 +53,10 @@ const user = userId => {
         });
 }
 
+/////////////////////////////////////////////////////////////
+//                   User API functions                    //
+/////////////////////////////////////////////////////////////
 
-// User API functions
 const getUser = (args) => { 
     let id = args.id;
     return User.findById(id)
@@ -111,7 +113,9 @@ const createUser = args => {
     })
 };
 
-//Question API Functions
+/////////////////////////////////////////////////////////////
+//               Question API functions                    //
+/////////////////////////////////////////////////////////////
 const createQuestion = args => {
     question = new Question({
         author: args.questionInput.author,
@@ -183,7 +187,9 @@ const getQuestions = () => {
 // }
 
 
-//Comment API Functions
+/////////////////////////////////////////////////////////////
+//                Comment API functions                    //
+/////////////////////////////////////////////////////////////
 
 const createComment = args => {
     comment = new Comment({
@@ -288,6 +294,11 @@ const getCommentsByParent = args => {
     });
 }
 
+
+
+/////////////////////////////////////////////////////////////
+//                 Root resolver export                    //
+/////////////////////////////////////////////////////////////
 const root = {
     createUser: createUser,
     users: getUsers,
