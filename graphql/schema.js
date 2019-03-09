@@ -5,6 +5,7 @@ module.exports = buildSchema(`
         users: [User!]!
         user(id: String!): User!
         question(id: String!): Question!
+        questions: [Question!]!
         comment(id: String!): Comment!
     }
 

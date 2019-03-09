@@ -4,12 +4,66 @@ const User = require('../models/user')
 const Question = require('../models/question')
 const Comment = require('../models/comment')
 
+
+// Functions for heirarchy population
+
+const questions = questionIds => {
+    return Question.find({_id: {$in: questionIds}})
+        .then(questions => {
+            return questions.map(question => {
+                return { 
+                    ...question._doc,
+                    _id: question.id,
+                    author: user.bind(this, question.author)
+                }
+            });
+        })
+        .catch(err => {
+            throw err
+        });
+}
+
+const comments = commentIds => {
+    return Comment.find({_id: {$in: commentIds}})
+        .then(comments => {
+            return comments.map(comment => {
+                return {
+                    ...comment._doc,
+                    _id: comment.id,
+                    author: user.bind(this, comment.author)
+                }
+            })
+        })
+}
+
+const user = userId => {
+    User.findById(userId)
+        .then(user => {
+            if(!user){
+                throw new Error(`User doesn't exist.`);
+            }
+            return { 
+                ...user._doc,
+                _id: user.id,
+                createdQuestions: questions.bind(this, user._doc.createdQuestions),
+                createdComments: comments.bind(this, user._doc.createdComments)
+            };
+        }).catch(err => {
+            throw err;
+        });
+}
+
+
 // User API functions
-const getUser = (args) => {
+const getUser = (args) => { 
     let id = args.id;
     return User.findById(id).populate()
     .then(user => {
-        return { ...user._doc, _id: user._doc._id.toString() };
+        return { 
+            ...user._doc,
+            _id: user._doc._id.toString(),
+            createdQuestions: questions.bind(this, user._doc.createdQuestions)
+        };
     })
     .catch(err => {
         throw err;
@@ -92,24 +146,33 @@ const getQuestion = args => {
     let id = args.id;
     return Question.findById(id).populate()
     .then(question => {
-        return { ...question._doc, _id: question._doc._id.toString() };
+        console.log(question._id.author)
+        return { 
+            ...question._doc,
+            _id: question._doc._id.toString(),
+            author: user.bind(this, question._doc.author)
+        };
     })
     .catch(err => {
         throw err;
     })
 }
 
-const getQuestions = args => {
-    return Question.find(args._id)
+const getQuestions = () => {
+    return Question.find()
     .then(questions => {
         return questions.map(question => {
-            return { ...question._doc, _id: question._doc._id.toString()};
-        })
+            return {
+                ...question._doc,
+                _id: question._doc._id.toString(),
+                author: getUser.bind(this, question._doc.author)
+            };
+        });
     })
     .catch(err => {
         console.log(err);
         throw err;
-    })
+    });
 }
 
 //Comment API Functions
@@ -146,7 +209,19 @@ const createComment = args => {
 }
 
 const getComment = args => {
-    return null
+    let id = args.id;
+    return Question.findById(id).populate()
+    .then(question => {
+        console.log(question._id.author)
+        return { 
+            ...question._doc,
+            _id: question._doc._id.toString(),
+            author: user.bind(this, question._doc.author)
+        };
+    })
+    .catch(err => {
+        throw err;
+    })
 }
 
 const root = {
