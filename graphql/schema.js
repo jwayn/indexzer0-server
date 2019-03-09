@@ -62,6 +62,7 @@ module.exports = buildSchema(`
         author: String!
         text: String!
         parentQuestion: String!
+        parentComment: String
     }
 
     type Comment {

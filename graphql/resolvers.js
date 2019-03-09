@@ -57,12 +57,13 @@ const user = userId => {
 // User API functions
 const getUser = (args) => { 
     let id = args.id;
-    return User.findById(id).populate()
+    return User.findById(id)
     .then(user => {
         return { 
             ...user._doc,
             _id: user._doc._id.toString(),
-            createdQuestions: questions.bind(this, user._doc.createdQuestions)
+            createdQuestions: questions.bind(this, user._doc.createdQuestions),
+            createdComments: comments.bind(this, user._doc.createdComments)
         };
     })
     .catch(err => {
@@ -146,7 +147,6 @@ const getQuestion = args => {
     let id = args.id;
     return Question.findById(id).populate()
     .then(question => {
-        console.log(question._id.author)
         return { 
             ...question._doc,
             _id: question._doc._id.toString(),
@@ -165,7 +165,7 @@ const getQuestions = () => {
             return {
                 ...question._doc,
                 _id: question._doc._id.toString(),
-                author: getUser.bind(this, question._doc.author)
+                author: user.bind(this, question._doc.author)
             };
         });
     })
@@ -175,12 +175,22 @@ const getQuestions = () => {
     });
 }
 
+
+// TODO: Create get user questions resolver
+
+// const getQuestionsByUser = args => {
+
+// }
+
+
 //Comment API Functions
 
 const createComment = args => {
-    comment = new comment({
+    comment = new Comment({
         author: args.commentInput.author,
         text: args.commentInput.text,
+        parentQuestion: args.commentInput.parentQuestion,
+        parentComment: args.commentInput.parentComment,
         createdDate: new Date().toISOString()
     });
 
@@ -189,7 +199,13 @@ const createComment = args => {
     return comment
         .save()
         .then(result => {
-            createdComment = { ...result._doc, id: result._doc._id.toString() };
+            createdComment = { 
+                ...result._doc, 
+                _id: result._doc._id.toString(),
+                parentQuestion: result._doc.parentQuestion,
+                author: user.bind(this, result._doc.author)
+            };
+            
             return User.findById(args.commentInput.author)
         })
         .then(user => {
@@ -210,9 +226,8 @@ const createComment = args => {
 
 const getComment = args => {
     let id = args.id;
-    return Question.findById(id).populate()
+    return Question.findById(id)
     .then(question => {
-        console.log(question._id.author)
         return { 
             ...question._doc,
             _id: question._doc._id.toString(),
@@ -222,6 +237,55 @@ const getComment = args => {
     .catch(err => {
         throw err;
     })
+}
+
+const getCommentsByQuestion = args => {
+    let questionID = args.questionID;
+
+    return Comment.find({parentQuestion: questionID})
+    .then(comment => {
+        return {
+            ...comment._doc,
+            _id: comment._doc._id.toString(),
+            author: user.bind(this, comment._doc.author),
+            childrenComments: comments.bind(this, comment._doc.childrenComments)
+        }
+    })
+    .catch(err => {
+        throw err;
+    });
+}
+
+const getCommentsByUser = args => {
+    let userID = args.userID;
+    
+    return Comment.find({author: userID})
+    .then(comment => {
+        return {
+            ...comment._doc,
+            _id: comment._doc._id.toString(),
+            author: user.bind(this, comment._doc.author)
+        }
+    })
+    .catch(err => {
+        throw err;
+    });
+}
+
+const getCommentsByParent = args => {
+    let parentCommentID = args.parentCommentID;
+    
+    return Comment.find({parentComment: parentCommentID})
+    .then(comment => {
+        return {
+            ...comment._doc,
+            _id: comment._doc._id.toString(),
+            author: user.bind(this, comment._doc.author)
+        }
+    })
+    .catch(err => {
+        throw err;
+    });
 }
 
 const root = {
@@ -234,7 +298,10 @@ const root = {
     questions: getQuestions,
     
     createComment: createComment,
-    comment: getComment
+    comment: getComment,
+    commentsByUser: getCommentsByUser,
+    commentsByQuestion: getCommentsByQuestion,
+    commentsByParent: getCommentsByParent
 };
 
 module.exports = root;
