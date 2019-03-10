@@ -13,8 +13,7 @@ const questions = questionIds => {
             return questions.map(question => {
                 return { 
                     ...question._doc,
-                    _id: question.id,
-                    author: user.bind(this, question.author)
+                    _id: question.id
                 }
             });
         })
@@ -29,8 +28,7 @@ const comments = commentIds => {
             return comments.map(comment => {
                 return {
                     ...comment._doc,
-                    _id: comment.id,
-                    author: user.bind(this, comment.author)
+                    _id: comment.id
                 }
             })
         })
@@ -42,11 +40,10 @@ const user = userId => {
             if(!user){
                 throw new Error(`User doesn't exist.`);
             }
+            console.log(...user._doc);
             return { 
                 ...user._doc,
-                _id: user.id,
-                createdQuestions: questions.bind(this, user._doc.createdQuestions),
-                createdComments: comments.bind(this, user._doc.createdComments)
+                _id: user.id
             };
         }).catch(err => {
             throw err;
@@ -162,21 +159,20 @@ const getQuestion = args => {
     })
 }
 
-const getQuestions = () => {
-    return Question.find()
-    .then(questions => {
-        return questions.map(question => {
+const getQuestions = async () => {
+    try{
+        const questions = await Question.find()
+        questions.map(question => {
             return {
                 ...question._doc,
                 _id: question._doc._id.toString(),
                 author: user.bind(this, question._doc.author)
             };
         });
-    })
-    .catch(err => {
-        console.log(err);
+        return questions;
+    } catch(err){
         throw err;
-    });
+    }
 }
 
 
@@ -190,7 +186,7 @@ const getQuestions = () => {
 /////////////////////////////////////////////////////////////
 //                Comment API functions                    //
 /////////////////////////////////////////////////////////////
-
+/*
 const createComment = args => {
     comment = new Comment({
         author: args.commentInput.author,
@@ -294,7 +290,7 @@ const getCommentsByParent = args => {
     });
 }
 
-
+*/
 
 /////////////////////////////////////////////////////////////
 //                 Root resolver export                    //
@@ -306,13 +302,15 @@ const root = {
     
     createQuestion: createQuestion,
     question: getQuestion,
-    questions: getQuestions,
+    questions: getQuestions/*,
+    
     
     createComment: createComment,
     comment: getComment,
     commentsByUser: getCommentsByUser,
     commentsByQuestion: getCommentsByQuestion,
     commentsByParent: getCommentsByParent
+    */
 };
 
 module.exports = root;

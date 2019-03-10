@@ -1,5 +1,83 @@
 const { buildSchema } = require('graphql');
+const graphql = require('graphql');
 
+const { 
+    GraphQLObjectType,
+    GraphQLString,
+    GraphQLBoolean,
+    GraphQLInt,
+    GraphQLSchema,
+    GraphQLID
+} = graphql;
+
+const UserType = new GraphQLObjectType({
+    name: 'User',
+    fields: () => ({
+        id: {type: GraphQLID},
+        email: {type: GraphQLString},
+        password: {type: GraphQLString},
+        displayName: {type: GraphQLString},
+        firstName: {type: GraphQLString},
+        lastName: {type: GraphQLString},
+        isAD: {type: GraphQLBoolean},
+        ADAccount: {type: GraphQLString},
+        authLevel: {type: GraphQLString},
+        score: {type: GraphQLInt},
+        dateCreated: {type: GraphQLString},
+        dateEdited: {type: GraphQLString}
+    })
+});
+
+const QuestionType = new GraphQLObjectType({
+    name: 'Question',
+    fields: () => ({
+        id: {type: GraphQLID},
+        author: {type: UserType},
+        text: {type: GraphQLString},
+        dateCreated: {type: GraphQLString},
+        dateEdited: {type: GraphQLString}
+    })
+})
+
+const RootQuery = new GraphQLObjectType({
+    name: 'RootQueryType',
+    fields: () => ({
+        OneUserByID: {
+            type: UserType,
+            args: {id: {type: GraphQLString}},
+            resolve(parent, args) {
+                // Code to get one user from DB
+            }
+        },
+        OneUserByEmail: {
+            type: UserType,
+            args: {id: {type: GraphQLString}},
+            resolve(parent, args) {
+                //code to get one user from DB
+            }
+        },
+        OneQuestionByID: {
+            type: QuestionType,
+            args: {id: {type: GraphQLString}},
+            resolve(parent, args) {
+
+            }
+        },
+        AllQuestionsByUserID: {
+            type: QuestionType,
+            args: {userID: {type: GraphQLString}},
+            resolve(parent, args){
+
+            }
+        }
+    })
+})
+
+module.exports = new GraphQLSchema({
+    query: RootQuery
+})
+
+/*
 module.exports = buildSchema(`
     type RootQuery {
         users: [User!]!
@@ -81,3 +159,5 @@ module.exports = buildSchema(`
         mutation: RootMutation
     }
 `);
+
+*/

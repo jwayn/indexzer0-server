@@ -13,6 +13,10 @@ const questionSchema = new Schema({
             ref: 'Comment'
         }
     ],
+    summary: {
+        type: String,
+        required: true
+    },
     text: {
         type: String,
         required: true
