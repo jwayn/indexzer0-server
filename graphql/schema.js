@@ -1,5 +1,10 @@
-const { buildSchema } = require('graphql');
 const graphql = require('graphql');
+
+const bcrypt = require('bcryptjs');
+
+const User = require('../models/user')
+const Question = require('../models/question')
+const Comment = require('../models/comment')
 
 const { 
     GraphQLObjectType,
@@ -7,7 +12,8 @@ const {
     GraphQLBoolean,
     GraphQLInt,
     GraphQLSchema,
-    GraphQLID
+    GraphQLID,
+    GraphQLList
 } = graphql;
 
 const UserType = new GraphQLObjectType({
@@ -24,7 +30,19 @@ const UserType = new GraphQLObjectType({
         authLevel: {type: GraphQLString},
         score: {type: GraphQLInt},
         dateCreated: {type: GraphQLString},
-        dateEdited: {type: GraphQLString}
+        dateEdited: {type: GraphQLString},
+        questions: {
+            type: new GraphQLList(QuestionType),
+            resolve(parent, args){
+                // grab all questions with author id of this user id
+            }
+        },
+        comments: {
+            type: new GraphQLList(CommentType),
+            resolve(parent, args){
+                // grab all comments with author id of this user id
+            }
+        }
     })
 });
 
@@ -32,132 +50,89 @@ const QuestionType = new GraphQLObjectType({
     name: 'Question',
     fields: () => ({
         id: {type: GraphQLID},
-        author: {type: UserType},
+        author: {
+            type: UserType,
+            resolve(parent, args){
+                // Grab author from users collection with parent.author
+            }
+        },
+        title: {type: GraphQLString},
+        text: {type: GraphQLString},
+        tags: {type: GraphQLString},
+        dateCreated: {type: GraphQLString},
+        dateEdited: {type: GraphQLString},
+        childrenComments: {
+            type: newGraphQLList(CommentType),
+            resolve(parent, args){
+                //grab all comments with parent question of this question ID
+            }
+        }
+    })
+});
+
+const CommentType = new GraphQLObjectType({
+    name: 'Comment',
+    fields: () => ({
+        id: {type: GraphQLID},
+        author: {
+            type: UserType,
+            resolve(parent, args){
+                // Grab author from users collection with parent.author
+            }
+        },
+        parentQuestion: {type: GraphQLString },
+        parentComment: {type: GraphQLString},
         text: {type: GraphQLString},
         dateCreated: {type: GraphQLString},
-        dateEdited: {type: GraphQLString}
+        dateEdited: {type: GraphQLString},
+        childrenComments: {
+            type: newGraphQLList(CommentType),
+            resolve(parent, args){
+                //Grab comments with parentComment of this comment ID
+            }
+        }
     })
-})
+});
 
 const RootQuery = new GraphQLObjectType({
     name: 'RootQueryType',
     fields: () => ({
+        Users: {
+            type: new GraphQLList(UserType),
+            resolve(parent, args){
+                // code to get all users
+            }
+        },
         OneUserByID: {
             type: UserType,
-            args: {id: {type: GraphQLString}},
+            args: {id: {type: GraphQLID}},
             resolve(parent, args) {
                 // Code to get one user from DB
             }
         },
-        OneUserByEmail: {
-            type: UserType,
-            args: {id: {type: GraphQLString}},
-            resolve(parent, args) {
-                //code to get one user from DB
+        Questions: {
+            type: new GraphQLList(QuestionType),
+            resolve(parent, args){
+                // code to get all questions
             }
         },
         OneQuestionByID: {
             type: QuestionType,
-            args: {id: {type: GraphQLString}},
+            args: {id: {type: GraphQLID}},
             resolve(parent, args) {
-
+                //code to get one question from DB based on ID
             }
         },
-        AllQuestionsByUserID: {
-            type: QuestionType,
-            args: {userID: {type: GraphQLString}},
+        OneCommentByID: {
+            type: CommentType,
+            args: {id: {type: GraphQLID}},
             resolve(parent, args){
-
+                //code to get one comment by ID
             }
         }
     })
-})
+});
 
 module.exports = new GraphQLSchema({
     query: RootQuery
 })
-
-/*
-module.exports = buildSchema(`
-    type RootQuery {
-        users: [User!]!
-        user(id: String!): User!
-        question(id: String!): Question!
-        questions: [Question!]!
-        comment(id: String!): Comment!
-    }
-
-    type RootMutation {
-        createUser(userInput: UserInput): User
-        createQuestion(questionInput: QuestionInput): Question
-        createComment(commentInput: CommentInput): Comment
-    }
-
-    input UserInput {
-        email: String!
-        password: String!
-        displayName: String!
-        authLevel: String!
-        isAD: Boolean!
-        ADAccount: String
-    }
-
-    type User {
-        _id: ID!
-        email: String!
-        password: String
-        displayName: String!
-        firstName: String
-        lastName: String
-        isAD: Boolean!
-        ADAccount: String
-        authLevel: String
-        score: Int
-        dateCreated: String
-        lastLoggedIn: String
-        createdQuestions: [Question!]
-        createdComments: [Comment!]
-    }
-
-    input QuestionInput {
-        author: String!
-        text: String!
-    }
-
-    type Question {
-        _id: ID!
-        author: User!
-        text: String!
-        createdDate: String!
-        lastEditedDate: String
-        childrenComments: [Comment!]!
-        answer: Comment
-        votes: [User!]
-        watchers: [User!]!
-    }
-
-    input CommentInput {
-        author: String!
-        text: String!
-        parentQuestion: String!
-        parentComment: String
-    }
-
-    type Comment {
-        _id: ID!
-        author: User!
-        text: String!
-        parentQuestion: Question!
-        createdDate: String!
-        lastEditedDate: String
-        ChildrenComments: [Comment!]!
-        votes: [User!]
-    }
-
-    schema {
-        query: RootQuery
-        mutation: RootMutation
-    }
-`);
-
-*/
