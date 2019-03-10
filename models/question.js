@@ -43,6 +43,12 @@ const questionSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Comment'
     },
+    tags: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'Tag'
+        }
+    ],
     watchers: [
         {
             type: Schema.Types.ObjectId,

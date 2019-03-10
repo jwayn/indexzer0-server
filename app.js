@@ -13,7 +13,7 @@ app.use(
     '/graphql',
     graphQLHttp({
         schema,
-        graphiql: false
+        graphiql: true
     })
 );
 
